@@ -1,4 +1,4 @@
-FROM php:7-fpm
+FROM php:5.6.30-fpm
 
 MAINTAINER Olivier Revollat <revollat@gmail.com>
 
@@ -6,7 +6,9 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN echo "Europe/Paris" > /etc/timezone; dpkg-reconfigure tzdata
 
 RUN apt-get update -y
-RUN apt-get install --no-install-recommends -y git ca-certificates curl mysql-server nginx supervisor
+RUN apt-get install --no-install-recommends -y git ca-certificates curl mysql-server nginx supervisor imagemagick php5-gd libfreetype6-dev libjpeg62-turbo-dev 
+RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/  &&  \
+            docker-php-ext-install gd
 
 COPY config/php.ini /usr/local/etc/php/
 
@@ -24,7 +26,7 @@ ADD supervisor.conf /etc/supervisor/conf.d/supervisor.conf
 WORKDIR /var/www
 RUN git clone https://github.com/sulu/sulu-standard.git
 WORKDIR /var/www/sulu-standard
-RUN git checkout master
+RUN git checkout tags/1.4.5
 RUN composer install --prefer-source
 COPY webspaces/sulu.io.xml app/Resources/webspaces/sulu.io.xml
 RUN cp app/Resources/pages/default.xml.dist app/Resources/pages/default.xml  && \
